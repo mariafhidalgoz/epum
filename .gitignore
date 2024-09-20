@@ -1,0 +1,18 @@
+
+# Jetbrains setting
+.idea
+
+# Test
+.pytest_cache
+
+# Format
+.ruff_cache
+
+# Environment
+.venv
+
+# Python
+__pycache__
+
+# Mac
+.DS_Store
