@@ -1,0 +1,22 @@
+FROM python:3.12
+LABEL authors="Maria Hidalgo"
+
+WORKDIR /code
+
+# Install poetry
+RUN pip install poetry==1.8.3
+
+# Copy requirements
+COPY ../fast-api/pyproject.toml /code/pyproject.toml
+COPY ../fast-api/poetry.lock /code/poetry.lock
+
+# Config virtual environment
+RUN poetry config virtualenvs.in-project true
+ENV PATH="$HOME/code/.venv/bin:$PATH"
+
+# Install requirement with poetry
+RUN poetry install
+
+COPY ../fast-api/app /code/app
+
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]
