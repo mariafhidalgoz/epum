@@ -14,6 +14,12 @@ Activate environment
 source .venv/bin/activate
 ```
 
+Install GDL dependencies
+
+```shell
+brew install gdal
+```
+
 Install requirements with [`poetry`](https://pypi.org/project/poetry/)
 
 ```shell
@@ -25,3 +31,14 @@ Start server
 ```shell
 fastapi run app/main.py --port 80
 ```
+
+Run the downloading
+
+```shell
+curl --request GET -sL \
+     --url 'http://0.0.0.0/data'
+```
+
+**NOTE**:
+The files will be downloaded in `/react-ui/src/data`.
+This path can be changed it [constants.py](./fast-api/app/constants.py) 
