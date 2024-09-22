@@ -106,12 +106,13 @@ async def get_geojson_file(url: str, name: str, epsg: str) -> Path:
         "where": "1=1",  # Basic query to get all data
         "returnGeometry": "true",
         "f": "json",  # Return response in GeoJSON format
+        "resultRecordCount": 1000,  # Max records per page
     }
 
-    response = await request_rest_api(url, params=params)  # Esri JSON data
+    all_data_layer = await fetch_paginated_data(url, params=params)  # Esri JSON data
     esri_json_file_name = f"esri_json_{name}"
     geojson_file_name = f"geojson_{name}"
-    esri_json = await create_esri_json_file(response, esri_json_file_name)
+    esri_json = await create_esri_json_file(all_data_layer, esri_json_file_name)
     geojson = await convert_esri_json_to_geojson_file(
         esri_json, epsg, geojson_file_name
     )
@@ -153,6 +154,47 @@ async def convert_esri_json_to_geojson_file(
     esri_json.unlink()
 
     return geojson
+
+
+async def fetch_paginated_data(api_url: str, params: dict = None) -> list:
+    """
+    Fetch data including pagination
+    Params:
+    - api_url: URL of the data to be requested.
+    - params: Param to fetch the data.
+    """
+    all_data = []  # To store all data
+    result_offset = 0  # Starting point for pagination
+
+    while True:
+        # Update params with the current page
+        params["resultOffset"] = result_offset
+
+        # Make the API request
+        data = await request_rest_api(api_url, params=params)
+
+        # If the response has data, add it to the list
+        if "features" in data:
+            if all_data:
+                # Include the next results
+                all_data["features"].extend(data["features"])
+            else:
+                # If all_data is empty we set it with the first result
+                all_data = data
+        else:
+            print(f"No results found on offset {result_offset}")
+            break
+
+        # Check if there are more pages
+        if 'exceededTransferLimit' not in data or not data['exceededTransferLimit']:
+            break  # No more pages, exit the loop
+
+        # Update offset for the next page
+        result_offset += params["resultRecordCount"]
+
+        print(f"Fetched {len(all_data['features'])} records so far...")
+
+    return all_data
 
 
 async def request_rest_api(url: str, params: dict) -> dict:
