@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import React, { useEffect, useState } from "react";
+import Mapbox from "./components/mapbox/Mapbox";
+import Service from "./components/layer/Service";
+import { data_services } from "./data/data_services"
 
-function App() {
+
+const App = () => {
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const fetchLayers = async () => {
+      // This can be change it to fetch the data from a REST API with the links of all sources
+      const data = data_services;
+      setServices(data);
+    };
+
+    fetchLayers();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Mapbox>
+        <div className="Layers">
+          {services.map((service) => (
+            <Service
+              key={service.id}
+              name={service.name}
+              layers={service.layers}
+            />
+          ))}
+        </div>
+      </Mapbox>
     </div>
   );
-}
+};
 
 export default App;
